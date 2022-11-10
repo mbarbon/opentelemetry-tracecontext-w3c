@@ -1,0 +1,10 @@
+/Build
+/Build.bat
+/dev_Build.PL
+/OpenTelemetry-TraceContext-W3C*
+/META.*
+/MYMETA.*
+/_build
+/.build
+/blib
+/pod2htm?.tmp
