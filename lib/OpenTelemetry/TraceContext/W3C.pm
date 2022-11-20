@@ -171,3 +171,122 @@ sub _make_tracestate_list_member {
 1;
 
 __END__
+
+=head1 SYNOPSIS
+
+    # traceparent
+    $traceparent = parse_traceparent($header_in_string);
+    $traceparent->{parent_id} = <generate new id>;
+    $header_out_string = format_traceparent($traceparent);
+
+    # tracestate
+    $tracestate = parse_tracestate($header_in_string);
+    update_tracestate($tracestate, $key, $value);
+    $header_out_string = format_tracestate($tracestate);
+
+=head1 DESCRIPTION
+
+This module provides a set of low-level functions to parse and format
+C<traceparent> and C<tracestate> headers as specified by
+L<Trace Context W3C recommendation|https://www.w3.org/TR/2021/REC-trace-context-1-20211123/>.
+
+It supports parsing/formatting of headers with version C<00> format.
+
+=head1 FUNCTIONS
+
+=head2 parse_traceparent
+
+    $parsed = parse_traceparent($header_string);
+
+Takes a C<traceparent> header value as input. Returns C<undef> on
+failure. On success it returns a hash with the following keys:
+
+=over 4
+
+=item version
+
+numeric version (e.g. version C<f0> would be returned as the number C<240>)
+
+=item trace_id
+
+hexadecimal trace id (a 32 character string)
+
+=item parent_id
+
+hexadecimal parent id (a 16 character string)
+
+=item trace_flags
+
+numeric trace flags (e.g. flags C<11> would be returned as the number C<17>)
+
+=back
+
+=head2 format_traceparent
+
+    $header_string = format_traceparent($parsed);
+
+Takes a value with the same structure as returned by L<parse_traceparent>.
+Returns a formatted C<traceparent> value on success, C<undef> on failure.
+
+=head2 parse_tracestate
+
+    $parsed = parse_tracestate($header_string);
+
+Takes a C<traceparent> header value as input. Returns C<undef> on
+failure. On success it returns a hash with the following key:
+
+=over 4
+
+=item list_members
+
+An array with one item for each valid key/value pair found in the header.
+
+Each item is an hash with the following keys:
+
+=over 4
+
+=item key, value
+
+the key/value pair. For multi-tenant systems, C<key> has the form C<< <tenant-id>@<system-id> >>.
+
+=item system_id
+
+Only present for multi-tenant systems.
+
+=item tenant_id
+
+Only present for multi-tenant systems.
+
+=back
+
+=back
+
+=head2 update_tracestate
+
+    $ok = update_tracestate($parsed, $key, $value);
+
+Takes a value with the same structure as returned by
+L<parse_tracestate>.  On success, it adds/updates the given key/value
+pair and returns a true value, returns a false value on failure.
+
+=head2 format_tracestate
+
+    $header_string = format_tracestate($parsed);
+    $header_string = format_tracestate($parsed, $options);
+
+Takes a value with the same structure as returned by L<parse_tracestate>.
+Returns a formatted C<tracestate> value on success, C<undef> on failure.
+
+C<$options> is an hash. The only supported option is
+
+=over 4
+
+=item max_length
+
+Maximum permitted lenght for the formatted header (defaults to
+512). If the formatted value is longer, entries are pruned as per the
+Trace Context specification.
+
+=back
+
+=cut
